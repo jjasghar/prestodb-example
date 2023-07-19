@@ -1,0 +1,62 @@
+---
+- hosts: all
+  become: true
+
+  vars_files:
+    - vars.yml
+
+  tasks:
+
+    - name: install mariadb
+      yum:
+        name:
+          - mariadb-server
+          - python3-PyMySQL
+        state: latest
+
+    - name: start mariadb
+      ansible.builtin.service:
+        name: mariadb
+        enabled: true
+        state: started
+
+    - name: Is root password set?
+      ansible.builtin.shell: mysql -u root --execute "SELECT NOW()"
+      args:
+        creates: /root/.mysql_password_set
+
+    - name: Set root password
+      ansible.builtin.shell:
+      args:
+        cmd: mysql -u root --execute "ALTER USER 'root'@'localhost' IDENTIFIED BY '{{ mysql_root_password }}';" && touch /root/.mysql_password_set
+        creates: /root/.mysql_password_set
+
+    - name: create remote user
+      ansible.builtin.shell:
+      args:
+        cmd: mysql -u root -p"{{ mysql_root_password }}" --execute "CREATE USER 'remote'@'%' IDENTIFIED BY '123456';"
+
+    - name: Set root remote permissions
+      ansible.builtin.shell:
+      args:
+        cmd: mysql -u root -p"{{ mysql_root_password }}" --execute "GRANT ALL PRIVILEGES ON * . * TO 'remote'@'%'; FLUSH PRIVILEGES;"
+
+    - name: create a new database
+      mysql_db:
+        name: testdb
+        state: present
+        login_user: root
+        login_password: "{{ mysql_root_password }}"
+
+    - name: add sample data to database
+      copy:
+        src: dump.sql
+        dest: /tmp/dump.sql
+
+    - name: insert sample data into database
+      mysql_db:
+        name: testdb
+        state: import
+        target: /tmp/dump.sql
+        login_user: root
+        login_password: "{{ mysql_root_password }}"

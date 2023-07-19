@@ -1,0 +1,35 @@
+---
+- hosts: all
+  become: true
+
+  vars_files:
+    - vars.yml
+
+  tasks:
+
+    - name: install redis
+      dnf:
+        name:
+          - redis
+        state: latest
+
+    - name: start redis
+      ansible.builtin.service:
+        name: redis
+        enabled: true
+        state: started
+
+    - name: install our redis config file
+      template:
+        src: redis.conf.j2
+        dest: /etc/redis/redis.conf
+        owner: root
+        group: root
+        mode: 0644
+
+
+    - name: restart redis
+      ansible.builtin.service:
+        name: redis
+        state: restarted
+

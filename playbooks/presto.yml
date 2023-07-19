@@ -1,0 +1,80 @@
+---
+- hosts: all
+  become: true
+
+  vars_files:
+    - vars.yml
+
+  tasks:
+
+    - name: Install Java
+      dnf: name=java-11-openjdk-devel state=present
+
+    - name: Install mysql-client
+      dnf: name=mysql state=present
+
+    - name: Install redis (client)
+      dnf: name=redis state=present
+
+    - name: Download Presto
+      get_url:
+        url: "https://repo1.maven.org/maven2/com/facebook/presto/presto-server/{{ presto_version }}/presto-server-{{ presto_version }}.tar.gz"
+        dest: "{{ download_dir }}/presto-server-{{ presto_version }}.tar.gz"
+        #checksum: "{{ presto_check_sum }}"
+
+    - name: Create the Presto install directory
+      ansible.builtin.file:
+        path: "{{ presto_install_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Create the Presto data directory
+      ansible.builtin.file:
+        path: "{{ presto_data_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Expand Presto
+      unarchive:
+        src: "{{ download_dir }}/presto-server-{{ presto_version }}.tar.gz"
+        dest: "{{ presto_install_dir }}"
+        remote_src: true
+        creates: "{{ presto_install_dir}}/presto-server-{{ presto_version }}"
+
+    - name: Create the Presto etc directory
+      ansible.builtin.file:
+        path: "{{ presto_etc_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Create the Presto catalog directory
+      ansible.builtin.file:
+        path: "{{ presto_etc_dir }}/catalog"
+        state: directory
+        mode: '0755'
+
+    - name: Node default config
+      template:
+        src: "node.properties.j2"
+        dest: "{{ presto_etc_dir }}/node.properties"
+
+    - name: JVM default config
+      template:
+        src: "jvm.config.j2"
+        dest: "{{ presto_etc_dir }}/jvm.config"
+
+    - name: Config default config
+      template:
+        src: "config.properties.j2"
+        dest: "{{ presto_etc_dir }}/config.properties"
+
+    - name: MySQL connecter
+      template:
+        src: "mysql.properties.j2"
+        dest: "{{ presto_etc_dir }}/catalog/mysql.properties"
+
+    - name: Redis connecter
+      template:
+        src: "redis.properties.j2"
+        dest: "{{ presto_etc_dir }}/catalog/redis.properties"
+
