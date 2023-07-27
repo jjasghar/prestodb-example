@@ -2,9 +2,10 @@
 # Presto varibles
 download_dir: /tmp
 presto_version: 0.282
-presto_install_dir: /opt/presto/
-presto_data_dir: /opt/presto/data
-presto_etc_dir: "{{ presto_install_dir}}/presto-server-{{ presto_version }}/etc/"
+presto_root_dir: /opt/presto/
+presto_data_dir: "{{ presto_root_dir }}/data"
+presto_install_dir: "{{ presto_root_dir }}/presto-server-{{ presto_version }}"
+presto_etc_dir: "{{ presto_install_dir }}/etc/"
 presto_check_sum: "69f111a608e5685e98176c1ab8f978b6"
 
 # Mariadb variables

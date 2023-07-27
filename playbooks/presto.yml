@@ -24,7 +24,7 @@
 
     - name: Create the Presto install directory
       ansible.builtin.file:
-        path: "{{ presto_install_dir }}"
+        path: "{{ presto_root_dir }}"
         state: directory
         mode: '0755'
 
@@ -37,9 +37,9 @@
     - name: Expand Presto
       unarchive:
         src: "{{ download_dir }}/presto-server-{{ presto_version }}.tar.gz"
-        dest: "{{ presto_install_dir }}"
+        dest: "{{ presto_root_dir }}"
         remote_src: true
-        creates: "{{ presto_install_dir}}/presto-server-{{ presto_version }}"
+        creates: "{{ presto_root_dir }}/presto-server-{{ presto_version }}"
 
     - name: Create the Presto etc directory
       ansible.builtin.file:
@@ -78,3 +78,7 @@
         src: "redis.properties.j2"
         dest: "{{ presto_etc_dir }}/catalog/redis.properties"
 
+    - name: Start Presto
+      ansible.builtin.shell:
+        cmd: bin/launcher start
+        chdir: "{{ presto_install_dir }}"
