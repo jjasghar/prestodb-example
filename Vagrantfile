@@ -18,6 +18,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.define "presto" do |app|
     app.vm.hostname = "presto.example.com"
     app.vm.network :private_network, ip: "192.168.56.4"
+    app.vm.network "forwarded_port", guest: 8080, host: 8080
 
     app.vm.provision :ansible do |ansible|
       ansible.verbose = "v"

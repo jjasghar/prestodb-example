@@ -10,6 +10,7 @@ The idea is to be able to show off how a _non_-containerized instance of prestod
 ## Preqs
 - [vagrant][vagrant]
 - [Virtualbox][virtualbox] - **note**: this was only tested with Virtualbox
+- [Ansible](https://docs.ansible.com/)
 
 ## Usage
 
